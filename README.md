@@ -2,6 +2,7 @@
 
 - [RHEL10を、KVMホストにする]()
 - [ブリッジ作成する]()
+- [virt-manager用マシンから、RHEL10-KVMホストに接続する]()
 
 
 ## RHEL10を、KVMホストにする
@@ -201,3 +202,23 @@ ubuntu@rhel10:~$ ip a
        valid_lft forever preferred_lft forever
 ubuntu@rhel10:~$
 ```
+
+## virt-manager用マシンから、RHEL10-KVMホストに接続する
+
+RHEL10へのSSH接続設定
+
+<img width="634" height="450" alt="image" src="https://github.com/user-attachments/assets/06727a1b-9d53-44a4-a1cd-5f122c87db25" />
+
+鍵をコピー
+```
+ssh-copy-id rhel10
+```
+→ パスワードなしでrhel10へSSHできるようになる
+
+RHEL10（KVMホスト）へ接続
+
+<img width="1146" height="640" alt="image" src="https://github.com/user-attachments/assets/405e07d5-8568-41c2-be40-fbf36cd4dd9e" />
+
+接続完了
+
+<img width="522" height="529" alt="image" src="https://github.com/user-attachments/assets/7f363d06-2405-4b89-87e2-f1764b91b558" />

@@ -205,7 +205,7 @@ ubuntu@rhel10:~$
 
 ## virt-manager用マシンから、RHEL10-KVMホストに接続する
 
-RHEL10へのSSH接続設定
+virt-manager用マシン（デスクトップUbuntu24）から、RHEL10に、パスワードなしでSSHできる必要がある
 
 <img width="634" height="450" alt="image" src="https://github.com/user-attachments/assets/06727a1b-9d53-44a4-a1cd-5f122c87db25" />
 

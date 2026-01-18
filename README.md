@@ -3,6 +3,7 @@
 - [RHEL10を、KVMホストにする]()
 - [ブリッジ作成する]()
 - [virt-manager用マシンから、RHEL10-KVMホストに接続する]()
+- [v2vする（centos6-8300上の centos5-p2v VM を、rhel10 に持っていく）]()
 
 
 ## RHEL10を、KVMホストにする
@@ -222,3 +223,79 @@ RHEL10（KVMホスト）へ接続
 接続完了
 
 <img width="522" height="529" alt="image" src="https://github.com/user-attachments/assets/7f363d06-2405-4b89-87e2-f1764b91b558" />
+
+
+## v2vする（centos6-8300上の centos5-p2v VM を、rhel10 に持っていく）
+
+まず、移行元（CentOS6）でVM停止
+```
+[root@centos6-8300 ~]# virsh list --all
+ Id    名前                         状態
+----------------------------------------------------
+ 1     centos5-p2v                    実行中
+ -     almalinux10                    シャットオフ
+
+[root@centos6-8300 ~]# virsh shutdown centos5-p2v
+ドメイン centos5-p2v をシャットダウンしています
+[root@centos6-8300 ~]# virsh list --all
+ Id    名前                         状態
+----------------------------------------------------
+ -     almalinux10                    シャットオフ
+ -     centos5-p2v                    シャットオフ
+
+[root@centos6-8300 ~]#
+```
+
+移行元（CentOS6）でVMバックアップ
+```
+[root@centos6-8300 ~]# virsh dumpxml centos5-p2v > /root/centos5-p2v.xml
+[root@centos6-8300 ~]# ls -lh /var/lib/libvirt/images/centos5-p2v-sda.qcow2v2 /root/centos5-p2v.xml
+-rw-r--r--. 1 root root 1.8K  1月 19 03:39 2026 /root/centos5-p2v.xml
+-rw-r--r--. 1 root root  18G  1月 19 03:38 2026 /var/lib/libvirt/images/centos5-p2v-sda.qcow2v2
+[root@centos6-8300 ~]#
+```
+
+移行先（RHEL10）へディスクを rsync でコピー（再開できて安全）
+
+※ ちなみに　今からこれを、
+```
+[root@centos6-8300 images]# pwd
+/var/lib/libvirt/images
+[root@centos6-8300 images]# ls
+CentOS-6.10-DVD1.iso  almalinux10.img  centos5-p2v-sda  centos5-p2v-sda.qcow2v2  p2v
+[root@centos6-8300 images]#
+```
+
+ここにコピーする
+```
+root@rhel10:/var/lib/libvirt/images# pwd
+/var/lib/libvirt/images
+root@rhel10:/var/lib/libvirt/images# ls
+root@rhel10:/var/lib/libvirt/images#
+```
+
+RHEL10からCentOS6へ、パスワードなしでSSHできる必要がある
+```
+root@rhel10:~# cat .ssh/config
+Host centos6-8300
+    HostName 10.20.30.200
+    User root
+    IdentityFile /home/ubuntu/.ssh/id_rsa_centos6-8300
+    HostKeyAlgorithms +ssh-rsa
+    PubkeyAcceptedAlgorithms +ssh-rsa
+    IdentitiesOnly yes
+    ServerAliveInterval 60
+root@rhel10:~#
+```
+
+コピー
+```
+root@rhel10:~# rsync -avh --progress centos6-8300:/var/lib/libvirt/images/centos5-p2v-sda.qcow2v2 /var/lib/libvirt/images/
+receiving incremental file list
+centos5-p2v-sda.qcow2v2
+         18.93G 100%   87.30MB/s    0:03:26 (xfr#1, to-chk=0/1)
+
+sent 30 bytes  received 18.93G bytes  91.25M bytes/sec
+total size is 18.93G  speedup is 1.00
+root@rhel10:~#
+```

@@ -299,3 +299,86 @@ sent 30 bytes  received 18.93G bytes  91.25M bytes/sec
 total size is 18.93G  speedup is 1.00
 root@rhel10:~#
 ```
+
+ファイルはコピーできたが、定義がまだない
+```
+root@rhel10:~# virsh list --all
+ Id   名前   状態
+-------------------
+
+root@rhel10:~#
+```
+
+CentOS6からXMLを持ってくる
+```
+root@rhel10:~# rsync -avh --progress centos6-8300:/root/centos5-p2v.xml /root/
+receiving incremental file list
+centos5-p2v.xml
+          1.80K 100%    1.72MB/s    0:00:00 (xfr#1, to-chk=0/1)
+
+sent 30 bytes  received 1.89K bytes  3.84K bytes/sec
+total size is 1.80K  speedup is 0.94
+root@rhel10:~# ls
+anaconda-ks.cfg  centos5-p2v.xml
+root@rhel10:~#
+```
+
+定義失敗
+```
+root@rhel10:~# virsh define centos5-p2v.xml
+error: centos5-p2v.xml からのドメイン定義に失敗しました
+error: サポートされない設定: エミュレーター '/usr/libexec/qemu-kvm' はマシンタイプ 'rhel6.6.0' をサポートしません
+
+root@rhel10:~#
+```
+
+<img width="791" height="964" alt="image" src="https://github.com/user-attachments/assets/accc1136-5d96-4391-83c0-482499fbe0fe" />
+
+
+```
+root@rhel10:~# sed -i "s/machine='rhel6.6.0'/machine='pc'/g" /root/centos5-p2v.xml
+root@rhel10:~# virsh define /root/centos5-p2v.xml
+error: /root/centos5-p2v.xml からのドメイン定義に失敗しました
+error: サポートされない設定: ドメイン設定はビデオモデル 'cirrus' をサポートしません
+
+```
+
+<img width="748" height="624" alt="image" src="https://github.com/user-attachments/assets/34d6ca4e-7622-4faa-9701-1252ef238888" />
+
+定義成功
+```
+root@rhel10:~# sed -i "s/model type='cirrus'/model type='vga'/g" /root/centos5-p2v.xml
+root@rhel10:~# virsh define /root/centos5-p2v.xml
+ドメイン 'centos5-p2v' が /root/centos5-p2v.xml から定義されました
+```
+
+VMを起動
+```
+root@rhel10:~# virsh list --all
+ Id   名前          状態
+----------------------------------
+ -    centos5-p2v   シャットオフ
+
+root@rhel10:~# virsh start centos5-p2v
+ドメイン 'centos5-p2v' が開始しました
+
+root@rhel10:~# virsh list --all
+ Id   名前          状態
+----------------------------
+ 1    centos5-p2v   実行中
+
+root@rhel10:~#
+```
+
+```
+root@rhel10:~# virsh vncdisplay centos5-p2v
+:0
+```
+<img width="417" height="162" alt="image" src="https://github.com/user-attachments/assets/e7dbf59f-7fbf-4d0f-a1bb-a0a49322d1ee" />
+
+
+<img width="665" height="404" alt="image" src="https://github.com/user-attachments/assets/28d28d23-8dc3-4b6c-b7b6-7e132d0d7de6" />
+
+
+<img width="441" height="475" alt="image" src="https://github.com/user-attachments/assets/68087e37-9c74-4e44-8b69-d63dfcd42480" />
+<img width="441" height="475" alt="image" src="https://github.com/user-attachments/assets/68087e37-9c74-4e44-8b69-d63dfcd42480" />
